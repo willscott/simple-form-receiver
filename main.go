@@ -73,7 +73,11 @@ func (s *Store) onPost(rw http.ResponseWriter, req *http.Request) {
 		sum := sha256.Sum256(data)
 		fname := fmt.Sprintf("%s/%x", s.root, sum)
 		if err := os.WriteFile(fname, data, 0644); err == nil {
-			rw.WriteHeader(200)
+			if redir := os.Getenv("REDIRECT"); redir != "" {
+				http.Redirect(rw, req, redir, http.StatusFound)
+			} else {
+				rw.WriteHeader(200)
+			}
 			return
 		} else {
 			rw.WriteHeader(500)
